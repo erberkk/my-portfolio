@@ -33,7 +33,11 @@ export default async function handler(req, res) {
   try {
     const r = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'erberkakbulut-portfolio/1.0 (+https://erberkakbulut.com)',
+      },
       body: JSON.stringify({
         access_key: key,
         from_name: 'Portfolio contact',
