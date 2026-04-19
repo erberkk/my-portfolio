@@ -43,12 +43,21 @@ export default async function handler(req, res) {
         message,
       }),
     });
-    const data = await r.json().catch(() => ({}));
+    const raw = await r.text();
+    let data = {};
+    try { data = JSON.parse(raw); } catch (e) {}
     if (r.ok && data.success) {
       return res.status(200).json({ success: true });
     }
-    return res.status(502).json({ success: false, message: data.message || 'Upstream error' });
+    console.error('[contact] web3forms failed', {
+      status: r.status,
+      keyLength: key.length,
+      keyPreview: key.slice(0, 4) + '...' + key.slice(-4),
+      body: raw.slice(0, 500),
+    });
+    return res.status(502).json({ success: false, message: data.message || `Upstream ${r.status}` });
   } catch (err) {
+    console.error('[contact] fetch threw', err && err.message);
     return res.status(502).json({ success: false, message: 'Upstream unreachable' });
   }
 }
