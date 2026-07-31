@@ -184,6 +184,8 @@
   letter-spacing: -0.02em; margin-bottom: 18px;
 }
 .sw-v-G .vinyl-side-title em { color: var(--accent); }
+.sw-v-G .vinyl-side-title a { transition: opacity 0.15s ease; }
+.sw-v-G .vinyl-side-title a:hover { opacity: 0.72; }
 .sw-v-G .vinyl-side-blurb {
   font: 400 14px/1.55 var(--sans);
   color: var(--fg-dim);

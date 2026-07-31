@@ -4,25 +4,28 @@
    ============================================================ */
 
 const SW_PROJECTS = [
-  { num: '01', name: 'Error <em>Agent</em>', tag: 'Real-time · AI', year: '2024',
+  { num: '01', name: '<em>Stackmate</em>', tag: 'Co-founder Match · Mobile', year: '2026',
+    blurb: 'Hinge-style swipe matching for co-founders — verified profiles, compatibility scoring, and blind post-meeting reviews. Shipping on the App Store now, Android on the way.',
+    stack: ['Flutter', 'FastAPI', 'Supabase'], color: 'accent', url: 'https://stackmateapp.com' },
+  { num: '02', name: 'Error <em>Agent</em>', tag: 'Real-time · AI', year: '2024',
     blurb: 'Python library that watches production for errors, reasons about stack traces, opens a GitHub PR with a fix, and pings the team on Slack.',
     stack: ['FastAPI', 'Python', 'LLM', 'GitHub API'], color: 'accent' },
-  { num: '02', name: '<em>Nimbus</em>', tag: 'Cloud · RAG', year: '2025',
+  { num: '03', name: '<em>Nimbus</em>', tag: 'Cloud · RAG', year: '2025',
     blurb: 'Your files, searchable by meaning. Drop a PDF, ask a question, get cited answers. Multi-language, multi-tenant, fast.',
     stack: ['Go · Fiber', 'MongoDB', 'MinIO', 'React', 'RAG'], color: 'lime' },
-  { num: '03', name: 'Schema <em>Whisperer</em>', tag: 'AI-native · Internal', year: '2025',
+  { num: '04', name: 'Schema <em>Whisperer</em>', tag: 'AI-native · Internal', year: '2025',
     blurb: 'Point it at a MongoDB. Ask anything in plain English. It introspects collections, generates the pipeline, runs it, and explains the documents back.',
     stack: ['Python', 'LLM', 'MongoDB', 'Aggregation'], color: 'accent' },
-  { num: '04', name: 'Claude · <em>Figma</em>', tag: 'Design Ops · Plugin', year: '2025',
+  { num: '05', name: 'Claude · <em>Figma</em>', tag: 'Design Ops · Plugin', year: '2025',
     blurb: 'A Figma plugin wired to Claude. Select frames, ask natural-language questions about the design, and get back actionable edits and analysis.',
     stack: ['Figma API', 'Claude', 'TypeScript'], color: 'lime' },
-  { num: '05', name: 'GitHub · <em>Spotify</em>', tag: 'README · Open source', year: '2024',
+  { num: '06', name: 'GitHub · <em>Spotify</em>', tag: 'README · Open source', year: '2024',
     blurb: 'An SVG widget you embed in your GitHub profile README. Pulls live GitHub activity and your currently-playing Spotify track, renders as a self-updating status card.',
     stack: ['SVG', 'Node', 'OAuth', 'GitHub Actions'], color: 'accent' },
-  { num: '06', name: '<em>Blinder</em>', tag: 'Mobile · Realtime', year: '2023',
+  { num: '07', name: '<em>Blinder</em>', tag: 'Mobile · Realtime', year: '2023',
     blurb: 'Cross-platform social app — student matching, real-time messaging, a full product loop designed and shipped through its lifecycle.',
     stack: ['React Native', 'Python', 'WebSocket'], color: 'lime' },
-  { num: '07', name: 'Heart · <em>Detection</em>', tag: 'Health · Award', year: '2024',
+  { num: '08', name: 'Heart · <em>Detection</em>', tag: 'Health · Award', year: '2024',
     blurb: 'TensorFlow module measuring heart-disease risk from clinical inputs. Awarded Engineering Project of the Year, Beykoz 2024.',
     stack: ['TensorFlow', 'Python', 'Flask'], color: 'accent' },
 ];
@@ -68,7 +71,9 @@ const SW_PROJECTS = [
     label.querySelector('.vinyl-label-tag').textContent = p.tag;
 
     sideSide.innerHTML = `SIDE <b>${SIDE[idx]}</b> · Project <b>${p.num}</b> · ${p.year}`;
-    sideTitle.innerHTML = p.name;
+    sideTitle.innerHTML = p.url
+      ? `<a href="${p.url}" target="_blank" rel="noopener">${p.name} ↗</a>`
+      : p.name;
     sideBlurb.textContent = p.blurb;
 
     tracksEl.innerHTML = p.stack.map((s, i) => `
