@@ -7,25 +7,28 @@ const SW_PROJECTS = [
   { num: '01', name: '<em>Stackmate</em>', tag: 'Co-founder Match · Mobile', year: '2026',
     blurb: 'Hinge-style swipe matching for co-founders — verified profiles, compatibility scoring, and blind post-meeting reviews. Shipping on the App Store now, Android on the way.',
     stack: ['Flutter', 'FastAPI', 'Supabase'], color: 'accent', url: 'https://stackmateapp.com' },
-  { num: '02', name: 'Error <em>Agent</em>', tag: 'Real-time · AI', year: '2024',
+  { num: '02', name: '<em>Pixy</em>', tag: 'Desktop · Local AI', year: '2026',
+    blurb: 'A small robot that sits on your desktop. It catches permission prompts from Claude Code and puts them on top of every window, chats with a model on your own machine, and listens when you say "hey pixy". Nothing leaves the disk it was written to.',
+    stack: ['Rust', 'Tauri', 'Local LLM', 'Whisper'], color: 'lime', url: 'https://github.com/erberkk/pixy' },
+  { num: '03', name: 'Error <em>Agent</em>', tag: 'Real-time · AI', year: '2024',
     blurb: 'Python library that watches production for errors, reasons about stack traces, opens a GitHub PR with a fix, and pings the team on Slack.',
     stack: ['FastAPI', 'Python', 'LLM', 'GitHub API'], color: 'accent' },
-  { num: '03', name: '<em>Nimbus</em>', tag: 'Cloud · RAG', year: '2025',
+  { num: '04', name: '<em>Nimbus</em>', tag: 'Cloud · RAG', year: '2025',
     blurb: 'Your files, searchable by meaning. Drop a PDF, ask a question, get cited answers. Multi-language, multi-tenant, fast.',
     stack: ['Go · Fiber', 'MongoDB', 'MinIO', 'React', 'RAG'], color: 'lime' },
-  { num: '04', name: 'Schema <em>Whisperer</em>', tag: 'AI-native · Internal', year: '2025',
+  { num: '05', name: 'Schema <em>Whisperer</em>', tag: 'AI-native · Internal', year: '2025',
     blurb: 'Point it at a MongoDB. Ask anything in plain English. It introspects collections, generates the pipeline, runs it, and explains the documents back.',
     stack: ['Python', 'LLM', 'MongoDB', 'Aggregation'], color: 'accent' },
-  { num: '05', name: 'Claude · <em>Figma</em>', tag: 'Design Ops · Plugin', year: '2025',
+  { num: '06', name: 'Claude · <em>Figma</em>', tag: 'Design Ops · Plugin', year: '2025',
     blurb: 'A Figma plugin wired to Claude. Select frames, ask natural-language questions about the design, and get back actionable edits and analysis.',
     stack: ['Figma API', 'Claude', 'TypeScript'], color: 'lime' },
-  { num: '06', name: 'GitHub · <em>Spotify</em>', tag: 'README · Open source', year: '2024',
+  { num: '07', name: 'GitHub · <em>Spotify</em>', tag: 'README · Open source', year: '2024',
     blurb: 'An SVG widget you embed in your GitHub profile README. Pulls live GitHub activity and your currently-playing Spotify track, renders as a self-updating status card.',
     stack: ['SVG', 'Node', 'OAuth', 'GitHub Actions'], color: 'accent' },
-  { num: '07', name: '<em>Blinder</em>', tag: 'Mobile · Realtime', year: '2023',
+  { num: '08', name: '<em>Blinder</em>', tag: 'Mobile · Realtime', year: '2023',
     blurb: 'Cross-platform social app — student matching, real-time messaging, a full product loop designed and shipped through its lifecycle.',
     stack: ['React Native', 'Python', 'WebSocket'], color: 'lime' },
-  { num: '08', name: 'Heart · <em>Detection</em>', tag: 'Health · Award', year: '2024',
+  { num: '09', name: 'Heart · <em>Detection</em>', tag: 'Health · Award', year: '2024',
     blurb: 'TensorFlow module measuring heart-disease risk from clinical inputs. Awarded Engineering Project of the Year, Beykoz 2024.',
     stack: ['TensorFlow', 'Python', 'Flask'], color: 'accent' },
 ];
@@ -48,7 +51,7 @@ const SW_PROJECTS = [
   const next = stage.querySelector('.vinyl-nav-btn.next');
   const playPauseBtn = stage.querySelector('.vinyl-nav-btn.play-pause');
 
-  const SIDE = ['A','B','C','D','E','F','G'];
+  const SIDE = ['A','B','C','D','E','F','G','H','I'];
   const TIMES = ['3:14','4:02','2:47','5:21','3:58','4:36','2:18','5:04'];
 
   let idx = 0;
