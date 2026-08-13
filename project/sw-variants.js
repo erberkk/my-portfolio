@@ -10,27 +10,27 @@ const SW_PROJECTS = [
   { num: '02', name: '<em>Pixy</em>', tag: 'Desktop · Local AI', year: '2026',
     blurb: 'A small robot that sits on your desktop. It catches permission prompts from Claude Code and puts them on top of every window, chats with a model on your own machine, and listens when you say "hey pixy". Nothing leaves the disk it was written to.',
     stack: ['Rust', 'Tauri', 'Local LLM', 'Whisper'], color: 'lime', url: 'https://github.com/erberkk/pixy' },
-  { num: '03', name: 'Error <em>Agent</em>', tag: 'Real-time · AI', year: '2024',
+  { num: '03', name: 'Sarıcaer <em>Studio</em>', tag: 'Client Work · Motion', year: '2026',
+    blurb: 'A trilingual one-pager for a fitness studio in Bolu — pinned scroll sequences, a hand-rolled responsive image pipeline, and WhatsApp-based signup that stores nothing server-side. Static export, no backend to run.',
+    stack: ['Next.js', 'Motion', 'Tailwind', 'Lenis'], color: 'accent', url: 'https://www.saricaerstudio.com' },
+  { num: '04', name: 'Error <em>Agent</em>', tag: 'Real-time · AI', year: '2024',
     blurb: 'Python library that watches production for errors, reasons about stack traces, opens a GitHub PR with a fix, and pings the team on Slack.',
-    stack: ['FastAPI', 'Python', 'LLM', 'GitHub API'], color: 'accent' },
-  { num: '04', name: '<em>Nimbus</em>', tag: 'Cloud · RAG', year: '2025',
+    stack: ['FastAPI', 'Python', 'LLM', 'GitHub API'], color: 'lime', url: 'https://github.com/erberkk/python-error-agent' },
+  { num: '05', name: '<em>Nimbus</em>', tag: 'Cloud · RAG', year: '2025',
     blurb: 'Your files, searchable by meaning. Drop a PDF, ask a question, get cited answers. Multi-language, multi-tenant, fast.',
-    stack: ['Go · Fiber', 'MongoDB', 'MinIO', 'React', 'RAG'], color: 'lime' },
-  { num: '05', name: 'Schema <em>Whisperer</em>', tag: 'AI-native · Internal', year: '2025',
-    blurb: 'Point it at a MongoDB. Ask anything in plain English. It introspects collections, generates the pipeline, runs it, and explains the documents back.',
-    stack: ['Python', 'LLM', 'MongoDB', 'Aggregation'], color: 'accent' },
+    stack: ['Go · Fiber', 'MongoDB', 'MinIO', 'React', 'RAG'], color: 'accent', url: 'https://github.com/erberkk/Nimbus' },
   { num: '06', name: 'Claude · <em>Figma</em>', tag: 'Design Ops · Plugin', year: '2025',
     blurb: 'A Figma plugin wired to Claude. Select frames, ask natural-language questions about the design, and get back actionable edits and analysis.',
-    stack: ['Figma API', 'Claude', 'TypeScript'], color: 'lime' },
-  { num: '07', name: 'GitHub · <em>Spotify</em>', tag: 'README · Open source', year: '2024',
-    blurb: 'An SVG widget you embed in your GitHub profile README. Pulls live GitHub activity and your currently-playing Spotify track, renders as a self-updating status card.',
-    stack: ['SVG', 'Node', 'OAuth', 'GitHub Actions'], color: 'accent' },
-  { num: '08', name: '<em>Blinder</em>', tag: 'Mobile · Realtime', year: '2023',
-    blurb: 'Cross-platform social app — student matching, real-time messaging, a full product loop designed and shipped through its lifecycle.',
-    stack: ['React Native', 'Python', 'WebSocket'], color: 'lime' },
+    stack: ['Figma API', 'Claude', 'TypeScript'], color: 'lime', url: 'https://github.com/erberkk/claude-figma-plugin' },
+  { num: '07', name: 'GitHub <em>Streak Stats</em>', tag: 'README · Open source', year: '2025',
+    blurb: 'An animated SVG widget you embed in your GitHub profile README — pulls your live contribution streak and renders it as a self-updating status card.',
+    stack: ['SVG', 'Node', 'GitHub API', 'GitHub Actions'], color: 'accent', url: 'https://github.com/erberkk/github-streak-stats' },
+  { num: '08', name: '<em>Spotify</em> Stats', tag: 'README · Open source', year: '2025',
+    blurb: 'A companion widget for your GitHub profile README — shows your currently-playing track and most-listened artists, refreshed on its own schedule.',
+    stack: ['SVG', 'Node', 'Spotify API', 'OAuth'], color: 'lime', url: 'https://github.com/erberkk/spotify-stats' },
   { num: '09', name: 'Heart · <em>Detection</em>', tag: 'Health · Award', year: '2024',
     blurb: 'TensorFlow module measuring heart-disease risk from clinical inputs. Awarded Engineering Project of the Year, Beykoz 2024.',
-    stack: ['TensorFlow', 'Python', 'Flask'], color: 'accent' },
+    stack: ['TensorFlow', 'Python', 'Flask'], color: 'accent', url: 'https://github.com/erberkk/diagnomodel' },
 ];
 
 (function vinyl() {
@@ -51,7 +51,9 @@ const SW_PROJECTS = [
   const next = stage.querySelector('.vinyl-nav-btn.next');
   const playPauseBtn = stage.querySelector('.vinyl-nav-btn.play-pause');
 
-  const SIDE = ['A','B','C','D','E','F','G','H','I'];
+  // Indexed directly by project (no wraparound) — keep at least as many
+  // letters as there are entries in SW_PROJECTS.
+  const SIDE = ['A','B','C','D','E','F','G','H','I','J','K','L'];
   const TIMES = ['3:14','4:02','2:47','5:21','3:58','4:36','2:18','5:04'];
 
   let idx = 0;
