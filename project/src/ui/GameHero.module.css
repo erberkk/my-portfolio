@@ -1,0 +1,12 @@
+.hero { position: relative; height: 100svh; min-height: 560px; overflow: hidden; background: #0b0913; }
+.stage { position: absolute; inset: 0; }
+.stage canvas { display: block; touch-action: none; }
+
+/* Soft dark veil that lifts once the scene has compiled. */
+.curtain {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(120% 80% at 50% 40%, #1a1426, #0b0913 70%);
+  transition: opacity 1.6s var(--ease-out);
+}
+.lifted { opacity: 0; }
+

@@ -1,0 +1,62 @@
+.layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+.vignette {
+  position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(160, 10, 10, 0.55) 100%);
+  transition: opacity 0.15s;
+}
+
+/* Player bars, bottom-left like the classics */
+.bars { position: absolute; left: var(--gutter); bottom: 66px; width: min(340px, 60vw); display: grid; gap: 7px; transition: opacity 0.6s; opacity: 0; }
+.hpTrack, .postureTrack { position: relative; height: 7px; background: rgba(0, 0, 0, 0.55); border: 1px solid rgba(241, 233, 223, 0.18); overflow: hidden; }
+.hp, .hpLag, .posture { position: absolute; inset: 0; transform-origin: left; }
+.hp { background: linear-gradient(#e0412c, #9b1d14); }
+.hpLag { background: #f3d9a4; opacity: 0.6; }
+.postureTrack { height: 5px; width: 72%; margin: 0 auto; border-color: rgba(230, 184, 101, 0.3); }
+.posture { transform-origin: center; background: linear-gradient(90deg, #b9832a, #ffd27a, #b9832a); }
+.posture[data-hot='1'] { background: linear-gradient(90deg, #d04a1c, #ffb347, #d04a1c); box-shadow: 0 0 10px #ff8a3a; }
+
+/* Enemy bars, tracked over their heads */
+.foe { position: absolute; left: 0; top: 0; width: 120px; margin-left: -60px; margin-top: -30px; display: grid; justify-items: center; gap: 4px; opacity: 0; will-change: transform; }
+.foePosture, .foeHp { position: relative; width: 100%; height: 4px; background: rgba(0, 0, 0, 0.6); overflow: hidden; }
+.foePosture { width: 80%; }
+.foePosture div, .foeHp div { position: absolute; inset: 0; }
+.foePosture div { transform-origin: center; background: #e6b865; }
+.foePosture div[data-hot='1'] { background: #ff8a3a; box-shadow: 0 0 8px #ff8a3a; }
+.foeHp div { transform-origin: left; background: #c8321f; }
+.danger { font: 800 30px/1 var(--jp); color: #ff2a1a; text-shadow: 0 0 16px #ff2a1a, 0 0 40px #ff2a1a; opacity: 0; transform: scale(1.4); transition: opacity 0.12s, transform 0.2s; }
+.foe[data-peril='1'] .danger { opacity: 1; transform: scale(1); }
+.foe[data-stagger='1'] .foePosture div { background: #ff3a2a; box-shadow: 0 0 12px #ff3a2a; }
+
+.perilous {
+  position: absolute; left: 50%; top: 22%; margin-left: -60px; width: 120px; text-align: center;
+  font: 800 110px/1 var(--jp); color: #ff2a1a;
+  text-shadow: 0 0 30px rgba(255, 42, 26, 0.9), 0 0 80px rgba(255, 42, 26, 0.5);
+}
+.deathblow {
+  position: absolute; left: 50%; bottom: clamp(140px, 22vh, 200px); transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 12px; white-space: nowrap;
+  padding: 10px 20px; font: 500 15px/1 var(--jp);
+  background: linear-gradient(90deg, transparent, rgba(80, 0, 0, 0.8) 15%, rgba(80, 0, 0, 0.8) 85%, transparent);
+}
+.dbKanji { font: 800 22px/1 var(--jp); color: #ff4a3a; }
+.shinobi {
+  position: absolute; left: 0; right: 0; top: 36%; text-align: center;
+  font: 800 clamp(5rem, 14vw, 10rem)/1 var(--jp); color: #d8261b; letter-spacing: 0.1em;
+  text-shadow: 0 0 40px rgba(216, 38, 27, 0.7), 4px 4px 0 #1a0000;
+}
+.death {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: radial-gradient(ellipse at center, rgba(40, 0, 0, 0.55), rgba(0, 0, 0, 0.85));
+}
+.death span { font: 800 clamp(8rem, 22vw, 16rem)/1 var(--jp); color: #b3140c; text-shadow: 0 0 60px rgba(179, 20, 12, 0.6); }
+.death p { font: 500 14px/1 var(--jp); letter-spacing: 0.3em; color: var(--fg-muted); text-transform: uppercase; }
+
+/* Lock-on reticle */
+.reticle { position: absolute; left: 0; top: 0; width: 26px; height: 26px; margin: -13px 0 0 -13px; opacity: 0; transition: opacity 0.2s; will-change: transform; }
+.reticle span {
+  position: absolute; inset: 5px; transform: rotate(45deg);
+  border: 1.5px solid #ffd27a; box-shadow: 0 0 10px rgba(255, 210, 122, 0.8), inset 0 0 6px rgba(255, 210, 122, 0.5);
+  animation: lockPulse 1.2s ease-in-out infinite;
+}
+@keyframes lockPulse { 50% { inset: 2px; opacity: 0.7; } }

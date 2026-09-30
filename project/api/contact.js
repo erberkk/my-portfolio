@@ -4,10 +4,28 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX = { name: 120, email: 200, message: 5000 };
 
+// Best-effort limiter: lives per warm instance, enough to blunt a spam burst.
+const WINDOW_MS = 10 * 60 * 1000;
+const LIMIT = 5;
+const hits = new Map();
+function limited(ip) {
+  const now = Date.now();
+  const recent = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 5000) hits.clear();
+  return recent.length > LIMIT;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ success: false, message: 'Method not allowed' });
+  }
+
+  const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  if (limited(ip)) {
+    return res.status(429).json({ success: false, message: 'Too many messages, try again later.' });
   }
 
   const key = process.env.WEB3FORMS_ACCESS_KEY;
@@ -53,13 +71,8 @@ export default async function handler(req, res) {
     if (r.ok && data.success) {
       return res.status(200).json({ success: true });
     }
-    console.error('[contact] web3forms failed', {
-      status: r.status,
-      keyLength: key.length,
-      keyPreview: key.slice(0, 4) + '...' + key.slice(-4),
-      body: raw.slice(0, 500),
-    });
-    return res.status(502).json({ success: false, message: data.message || `Upstream ${r.status}` });
+    console.error('[contact] web3forms failed', { status: r.status, body: raw.slice(0, 500) });
+    return res.status(502).json({ success: false, message: 'Could not send right now.' });
   } catch (err) {
     console.error('[contact] fetch threw', err && err.message);
     return res.status(502).json({ success: false, message: 'Upstream unreachable' });
