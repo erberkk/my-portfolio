@@ -104,7 +104,7 @@ export const projects: Project[] = [
     kind: 'Concept · Digital menu', year: '2026', status: 'Live demo',
     blurb: 'A bilingual QR menu concept for a restaurant in Bolu: a scroll-driven editorial opening, then 198 dishes with Turkish-aware search, allergen labels and a saved list. Vanilla JS and GSAP, no framework, zero WCAG AA violations under axe-core.',
     stack: ['Vanilla JS', 'GSAP', 'Node', 'Playwright'],
-    url: 'https://fay-gurme.vercel.app', linkLabel: 'fay-gurme.vercel.app',
+    url: 'https://fay-gurme-demo.vercel.app', linkLabel: 'fay-gurme-demo.vercel.app',
   },
   {
     slug: 'saricaer', name: 'Sarıcaer Studio',
