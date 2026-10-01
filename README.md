@@ -1,47 +1,79 @@
 # erberk — portfolio
 
-A night-shrine portfolio. The top of the page is a small 3D game: you walk a
-samurai up a sakura-lined path, cut bamboo, deflect ink ronin, and pray at sites
-of grace to read each section. Below it, the same content as a normal page for
-anyone who would rather scroll. Phones get an illustrated opening instead of
-the game, which loads only on request.
+Cinematic scrollable portfolio. Static HTML/CSS/JS + one Vercel serverless function for the contact form.
 
 ## Stack
 
-- Vite + React + TypeScript, deployed on Vercel from `project/`
-- three.js via `@react-three/fiber`, `drei` and `postprocessing` (lazy-loaded chunk)
-- Motion and Lenis for page animation and scrolling
-- One serverless function: `api/contact.js` proxies the contact form to Web3Forms
-- All 3D geometry, textures and sound are generated in code; no models or audio files
+- Static site (single `index.html` + `sw-variants.css` + `sw-variants.js`)
+- 1 serverless function: `api/contact.js` → proxies to Web3Forms so the access key stays server-side
+- External APIs: GitHub contributions (cached 6h in localStorage)
 
 ## Local dev
 
 ```bash
+npm i -g vercel
 cd project
-npm install
-npm run dev          # site only
-vercel dev           # site + /api/contact (needs .env.local with WEB3FORMS_ACCESS_KEY)
+vercel dev
 ```
 
-`npm run build` regenerates the Japanese font subset (`scripts/jp-glyphs.mjs`),
-type-checks, and builds to `dist/`.
+Local `/api/contact` will only work after you create `.env.local` with `WEB3FORMS_ACCESS_KEY`.
 
-## Deploy
+## Deploy to Vercel
 
-Vercel project root directory: `project`. `project/vercel.json` sets the Vite
-build, so pushing to `main` deploys. Set `WEB3FORMS_ACCESS_KEY` in the project's
-environment variables.
+### 1. Get a Web3Forms access key
+- Go to https://web3forms.com, sign up free, verify your email.
+- Copy the access key it gives you. Treat it like a password.
 
-## Where things live
+### 2. Push the repo to GitHub
+```bash
+cd portfolio
+git init
+git add .
+git commit -m "init portfolio"
+git branch -M main
+git remote add origin git@github.com:erberkk/portfolio.git
+git push -u origin main
+```
+
+### 3. Import on Vercel
+- https://vercel.com/new → Import the GitHub repo.
+- **Root Directory**: set to `project` (the folder containing `index.html`).
+- Framework preset: **Other** (it's plain static + serverless).
+- Build command: leave empty.
+- Output directory: leave empty.
+
+### 4. Add the env var
+Project → **Settings → Environment Variables**:
+- Name: `WEB3FORMS_ACCESS_KEY`
+- Value: the key from step 1
+- Environments: Production + Preview + Development
+
+### 5. Deploy
+Click **Deploy**. Vercel will give you a `.vercel.app` URL.
+
+### 6. (Optional) Custom domain
+Project → **Settings → Domains** → add your domain and follow DNS instructions.
+
+## Post-deploy sanity checks
+
+- Open the site, scroll to the bottom, click **say hi**, send yourself a test message.
+- Open DevTools → Application → Local Storage → check `gh-heatmap-v1` is populated (GitHub cache working).
+- Chrome DevTools → Rendering → enable `prefers-reduced-motion: reduce` and reload — grain/marquee/tunnel glitch should disappear.
+
+## Files
 
 ```
 project/
-├── api/contact.js        # Web3Forms proxy (rate limited)
-├── scripts/jp-glyphs.mjs # requests only the kanji the site uses
-├── src/data/site.ts      # all copy: profile, impact, projects, experience
-├── src/content/          # section content, shared by the page and the grace menu
-├── src/ui/               # nav, hero, HUD, combat overlay, page sections
-└── src/world/            # the 3D shrine: layout, scene pieces, player, enemies, audio
+├── api/contact.js       # Vercel serverless (keeps Web3Forms key server-side)
+├── index.html           # the whole site
+├── sw-variants.css      # vinyl styles for Selected Work
+├── sw-variants.js       # vinyl player interactions + project list
+├── uploads/             # CV PDF
+├── vercel.json          # security headers + asset caching
+├── .env.example         # env var template
+└── .gitignore
 ```
 
-To change projects or text, edit `src/data/site.ts`.
+## Updating projects
+
+Selected Work projects live in [sw-variants.js](project/sw-variants.js) inside the `SW_PROJECTS` array.
