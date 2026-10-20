@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#0b0b0e"></rect>
+
+  
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#2a2a30" stroke-width="0.8"></circle>
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#2a2a30" stroke-width="0.8"></circle>
+  <circle cx="32" cy="32" r="16" fill="none" stroke="#2a2a30" stroke-width="0.8"></circle>
+
+  
+  <path d="M 32 6 A 26 26 0 0 1 58 32" fill="none" stroke="#ff5b22" stroke-width="2" stroke-linecap="round"></path>
+
+  
+  <text x="32" y="38" font-family="&#39;Fraunces&#39;, &#39;Times New Roman&#39;, serif" font-size="28" font-style="italic" font-weight="300" fill="#f2ede4" text-anchor="middle" letter-spacing="-0.02em">e</text>
+</svg>
