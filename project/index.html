@@ -132,11 +132,12 @@ a { color: inherit; text-decoration: none; }
 .cursor {
   position: fixed; top: 0; left: 0; width: 14px; height: 14px;
   border-radius: 50%; background: var(--accent);
-  pointer-events: none; z-index: 9999; mix-blend-mode: difference;
+  pointer-events: none; z-index: 9999;
+  /* no mix-blend-mode: a blended fixed element makes the browser copy the whole viewport every frame while scrolling */
   transform: translate(-50%, -50%); will-change: transform;
   transition: width 0.25s ease, height 0.25s ease, background 0.25s ease, opacity 0.3s ease;
 }
-.cursor.big { width: 80px; height: 80px; background: var(--accent-2); }
+.cursor.big { width: 80px; height: 80px; background: rgba(200,255,61,0.16); box-shadow: inset 0 0 0 1px var(--accent-2); }
 .cursor-ring {
   position: fixed; top: 0; left: 0; width: 40px; height: 40px;
   border: 1px solid rgba(242,237,228,0.5); border-radius: 50%;
