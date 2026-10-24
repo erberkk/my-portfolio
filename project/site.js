@@ -1,7 +1,7 @@
 /* ============================================================
    ERBERK — interactions
    ============================================================ */
-import { createChrome } from "./chrome.js?v=4";
+import { createChrome } from "./chrome.js?v=5";
 import { SW_CATS, SW_PROJECTS } from "./projects.js?v=3";
 
 const { gsap, ScrollTrigger, SplitText, Lenis } = window;

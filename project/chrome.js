@@ -226,7 +226,7 @@ void main() {
   float t = disc > 0.0 ? max(0.0, -bb - sqrt(disc)) : max(0.0, -mb - 0.6);
   float minD = 1e3, minT = 0.0;
   bool hit = false;
-  for (int i = 0; i < 96; i++) {
+  for (int i = 0; i < STEPS; i++) {
     vec3 p = ro + rd * t;
     float d = scene(p);
     if (d < minD) { minD = d; minT = t; }
@@ -243,7 +243,8 @@ void main() {
     vec3 n = normalAt(p);
     vec3 r = reflect(rd, n);
     col = shade(rd, n);
-    // one bounce: chrome that faces other chrome reflects it
+    // one bounce: chrome that faces other chrome reflects it (desktop only; phones spend it on resolution)
+#ifndef LITE
     float t2 = 0.03;
     for (int j = 0; j < 28; j++) {
       float d2 = scene(p + r * t2);
@@ -255,6 +256,7 @@ void main() {
       t2 += d2;
       if (t2 > 3.0) break;
     }
+#endif
     float ao = clamp(scene(p + n * 0.12) / 0.12, 0.0, 1.0);
     col *= 0.5 + 0.5 * ao;
     alpha = 1.0;
@@ -277,6 +279,7 @@ const VERT = `attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }`
 export const SHAPES = ["hero", "melt", "ring", "chain", "orb"];
 
 export function createChrome(canvas) {
+  const lite = matchMedia("(max-width: 860px), (pointer: coarse)").matches;
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "high-performance", preserveDrawingBuffer: false });
   if (!gl) return null;
   const sh = (type, src) => {
@@ -287,7 +290,7 @@ export function createChrome(canvas) {
   };
   const prog = gl.createProgram();
   gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
-  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, (lite ? "#define LITE\n#define STEPS 72\n" : "#define STEPS 96\n") + FRAG));
   gl.linkProgram(prog);
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
   gl.useProgram(prog);
@@ -312,8 +315,11 @@ export function createChrome(canvas) {
   const mouse = { x: 0, y: 0, on: 0, tx: 0, ty: 0, ton: 0, has: false };
   let splash = 0, splashT = -10, time = 0, lastShape = "hero";
 
-  let quality = matchMedia("(max-width: 860px)").matches ? 0.55 : 0.85;
-  const dpr = Math.min(devicePixelRatio || 1, 1.5);
+  // Phones render at (near) panel resolution: a low-res canvas stretched over a 3x screen is
+  // what made the metal look smeared. Cost is cut in the shader (LITE) instead of in pixels.
+  let quality = lite ? 1 : 0.85;
+  const minQuality = lite ? 0.75 : 0.4;
+  const dpr = Math.min(devicePixelRatio || 1, lite ? 2 : 1.5);
   function resize() {
     const w = Math.max(1, Math.round(innerWidth * dpr * quality));
     const h = Math.max(1, Math.round(innerHeight * dpr * quality));
@@ -403,7 +409,7 @@ export function createChrome(canvas) {
     frames++; acc += dt;
     if (frames >= 40) {
       const avg = acc / frames;
-      if (avg > 0.022 && quality > 0.4) { quality = Math.max(0.4, quality - 0.1); resize(); }
+      if (avg > 0.022 && quality > minQuality) { quality = Math.max(minQuality, quality - 0.05); resize(); }
       else if (avg < 0.0135 && quality < 1) { quality = Math.min(1, quality + 0.05); resize(); }
       frames = 0; acc = 0;
     }
