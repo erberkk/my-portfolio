@@ -1,10 +1,10 @@
 # erberk — portfolio
 
-Cinematic scrollable portfolio. Static HTML/CSS/JS + one Vercel serverless function for the contact form.
+Liquid-chrome portfolio on OLED black. Static HTML/CSS/JS (a raymarched WebGL shader, GSAP and Lenis from jsDelivr, no build step) + one Vercel serverless function for the contact form.
 
 ## Stack
 
-- Static site (single `index.html` + `sw-variants.css` + `sw-variants.js`)
+- Static site: `index.html` + `site.css` + `site.js` (ES module) + `chrome.js` (WebGL liquid chrome) + `projects.js` (data)
 - 1 serverless function: `api/contact.js` → proxies to Web3Forms so the access key stays server-side
 - External APIs: GitHub contributions (cached 6h in localStorage)
 
@@ -58,22 +58,29 @@ Project → **Settings → Domains** → add your domain and follow DNS instruct
 
 - Open the site, scroll to the bottom, click **say hi**, send yourself a test message.
 - Open DevTools → Application → Local Storage → check `gh-heatmap-v1` is populated (GitHub cache working).
-- Chrome DevTools → Rendering → enable `prefers-reduced-motion: reduce` and reload — grain/marquee/tunnel glitch should disappear.
+- Chrome DevTools → Rendering → enable `prefers-reduced-motion: reduce` and reload — the marquee stops and the chrome slows to a crawl.
 
 ## Files
 
 ```
 project/
 ├── api/contact.js       # Vercel serverless (keeps Web3Forms key server-side)
-├── index.html           # the whole site
-├── sw-variants.css      # vinyl styles for Selected Work
-├── sw-variants.js       # vinyl player interactions + project list
+├── index.html           # markup
+├── site.css             # styles
+├── site.js              # interactions, scroll → chrome mapping, heatmap, mail popup
+├── chrome.js            # raymarched liquid chrome (plain WebGL, no library)
+├── projects.js          # Selected Work data
+├── favicon.* · icon-* · og.png · site.webmanifest   # web icons + share image
 ├── uploads/             # CV PDF
 ├── vercel.json          # security headers + asset caching
 ├── .env.example         # env var template
 └── .gitignore
 ```
 
+## Brand
+
+Logo masters, lockups and usage notes live in [brand/](brand/README.md).
+
 ## Updating projects
 
-Selected Work projects live in [sw-variants.js](project/sw-variants.js) inside the `SW_PROJECTS` array.
+Selected Work projects live in [projects.js](project/projects.js) inside the `SW_PROJECTS` array.
