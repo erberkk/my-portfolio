@@ -53,10 +53,11 @@
 </script>
 
 
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preload" href="/fonts/Archivo-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/Archivo-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/InstrumentSerif-italic-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/JetBrainsMono-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <link rel="stylesheet" href="site.css?v=5">
 </head>
 <body class="is-loading">
@@ -114,7 +115,6 @@
 
   <!-- IMPACT -->
   <section class="impact" id="impact" data-shape="melt" data-x="0.6" data-y="0.22" data-s="0.78" data-m="0.55 0.62 0.42">
-    <p class="label mono"><b>01</b> Impact · at the day job</p>
     <div class="gh">
       <div class="gh__head mono">
         <span>Commit heatmap · last 12 months</span>
@@ -131,7 +131,7 @@
 
   <!-- WORK -->
   <section class="work" id="selected-work" data-shape="ring" data-x="-0.6" data-y="0" data-s="0.82" data-m="0.5 0.6 0.45">
-    <p class="label mono"><b>02</b> Selected work · after hours</p>
+    <p class="label mono"><b>01</b> Selected work · after hours</p>
     <div class="work__head">
       <h2 class="h2 split">things I <em>actually</em> build.</h2>
       <div class="work__filter mono" id="workFilter" role="group" aria-label="Filter projects by category"></div>
@@ -141,7 +141,7 @@
 
   <!-- JOURNEY -->
   <section class="journey" id="process" data-shape="chain" data-x="0.68" data-y="-0.05" data-s="0.85" data-m="0.62 0.15 0.5">
-    <p class="label mono"><b>03</b> Journey</p>
+    <p class="label mono"><b>02</b> Journey</p>
     <div class="journey__head">
       <h2 class="h2 split">not a résumé. a <em>trajectory</em>.</h2>
       <p class="journey__intro">Six in-house platforms end-to-end. A cargo platform used across borders. One award, a lot of stand-ups. The short version of the story.</p>
@@ -177,7 +177,7 @@
 
   <!-- CONTACT -->
   <section class="contact" id="contact" data-shape="orb" data-x="0.55" data-y="0.32" data-s="0.62" data-m="0.35 0.5 0.4">
-    <div class="contact__top mono"><span><b>04</b> Contact</span><span>Istanbul · UTC+3</span></div>
+    <div class="contact__top mono"><span><b>03</b> Contact</span><span>Istanbul · UTC+3</span></div>
     <h2 class="contact__headline">
       <span class="line">a question,</span>
       <span class="line">an <em>idea</em>,</span>
@@ -215,10 +215,10 @@
   </div>
 </div>
 
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
-<script type="module" src="site.js?v=7"></script>
+<script defer src="/vendor/gsap.min.js"></script>
+<script defer src="/vendor/ScrollTrigger.min.js"></script>
+<script defer src="/vendor/SplitText.min.js"></script>
+<script defer src="/vendor/lenis.min.js"></script>
+<script type="module" src="site.js?v=8"></script>
 </body>
 </html>
