@@ -111,7 +111,7 @@ section { position: relative; padding: 0 var(--gutter); }
 
 /* ------------------------------------------------------------ impact */
 .impact { padding-top: 22vh; padding-bottom: 14vh; }
-.impact .h2 { margin-bottom: 4.5rem; }
+.impact .label { margin-bottom: 4.5rem; }
 .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem 3rem; max-width: 56%; }
 .stat { border-top: 1px solid var(--rule); padding-top: 1.1rem; }
 .stat .n { display: block; font-weight: 200; font-stretch: 125%; font-size: clamp(3rem, 5.6vw, 6rem); line-height: 0.9; letter-spacing: -0.06em; white-space: nowrap; font-variant-numeric: tabular-nums; }
