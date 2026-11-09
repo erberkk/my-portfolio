@@ -1,7 +1,7 @@
 /* ============================================================
    ERBERK — interactions
    ============================================================ */
-import { createChrome } from "./chrome.js?v=5";
+import { createChrome } from "./chrome.js?v=6";
 import { SW_CATS, SW_PROJECTS } from "./projects.js?v=3";
 
 const { gsap, ScrollTrigger, SplitText, Lenis } = window;
@@ -13,8 +13,19 @@ const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
 const mobile = () => matchMedia("(max-width: 860px)").matches;
 
 /* ---------------------------------------------------------- chrome */
+// preloader counter starts first so it animates while the WebGL shader compiles
+const countEl = $("#preCount"), bar = $("#preBar");
+const shown = { v: 0 };
+const loadTick = () => {
+  shown.v += (1 - shown.v) * 0.16;
+  countEl.textContent = String(Math.round(shown.v * 100)).padStart(3, "0");
+  bar.style.transform = `scaleX(${shown.v})`;
+};
+gsap.ticker.add(loadTick);
+await new Promise((r) => requestAnimationFrame(() => r()));
+
 let chrome = null;
-try { chrome = createChrome($("#chrome")); } catch (e) { console.warn("chrome:", e); }
+try { chrome = await createChrome($("#chrome")); } catch (e) { console.warn("chrome:", e); }
 if (!chrome) document.documentElement.classList.add("no-gl");
 const T = chrome ? chrome.target : { };
 
@@ -315,14 +326,6 @@ function scrollAnims() {
 })();
 
 /* ---------------------------------------------------------- boot */
-const countEl = $("#preCount"), bar = $("#preBar");
-const shown = { v: 0 };
-const loadTick = () => {
-  shown.v += (1 - shown.v) * 0.16;
-  countEl.textContent = String(Math.round(shown.v * 100)).padStart(3, "0");
-  bar.style.transform = `scaleX(${shown.v})`;
-};
-gsap.ticker.add(loadTick);
 await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1200))]);
 await new Promise((r) => { const w = () => (shown.v > 0.995 ? r() : requestAnimationFrame(w)); w(); });
 gsap.ticker.remove(loadTick);

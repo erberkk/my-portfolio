@@ -278,21 +278,26 @@ const VERT = `attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }`
 
 export const SHAPES = ["hero", "melt", "ring", "chain", "orb"];
 
-export function createChrome(canvas) {
+export async function createChrome(canvas) {
   const lite = matchMedia("(max-width: 860px), (pointer: coarse)").matches;
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "high-performance", preserveDrawingBuffer: false });
   if (!gl) return null;
   const sh = (type, src) => {
     const s = gl.createShader(type);
     gl.shaderSource(s, src); gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
     return s;
   };
   const prog = gl.createProgram();
-  gl.attachShader(prog, sh(gl.VERTEX_SHADER, VERT));
-  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, (lite ? "#define LITE\n#define STEPS 72\n" : "#define STEPS 96\n") + FRAG));
+  const vs = sh(gl.VERTEX_SHADER, VERT);
+  const fs = sh(gl.FRAGMENT_SHADER, (lite ? "#define LITE\n#define STEPS 72\n" : "#define STEPS 96\n") + FRAG);
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
   gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  // Compile/link of the raymarcher is heavy. Querying the status right away blocks the main
+  // thread (frozen preloader); with KHR_parallel_shader_compile it happens off-thread and we poll.
+  const par = gl.getExtension("KHR_parallel_shader_compile");
+  if (par) await new Promise((res) => { const poll = () => (gl.getProgramParameter(prog, par.COMPLETION_STATUS_KHR) ? res() : setTimeout(poll, 16)); poll(); });
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getShaderInfoLog(fs) || gl.getProgramInfoLog(prog));
   gl.useProgram(prog);
   const buf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buf);
