@@ -206,24 +206,11 @@ function scrollAnims() {
     if (el.closest(".hero")) return;
     gsap.from($$(".line", el), { yPercent: 110, duration: 1.2, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: el, start: "top 88%" } });
   });
-  gsap.from(".stat", { y: 40, opacity: 0, duration: 1.1, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: ".stats", start: "top 85%" } });
   gsap.from(".proj", { y: 30, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.04, scrollTrigger: { trigger: ".work__list", start: "top 88%" } });
   gsap.from(".row > *", { y: 30, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.07, scrollTrigger: { trigger: ".rows", start: "top 88%" } });
   gsap.from(".contact__headline .line, .say", { yPercent: 105, duration: 1.3, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: ".contact__headline", start: "top 80%" } });
   gsap.from(".contact__foot .col", { y: 20, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.06, scrollTrigger: { trigger: ".contact__foot", start: "top 95%" } });
 }
-
-/* ---------------------------------------------------------- stats counter */
-$$(".stat .n").forEach((n) => {
-  ScrollTrigger.create({
-    trigger: n, start: "top 85%", once: true,
-    onEnter: () => {
-      const to = parseFloat(n.dataset.to || "0"), pre = n.dataset.prefix || "", suf = n.dataset.suffix || "";
-      const o = { v: 0 };
-      gsap.to(o, { v: to, duration: reduced ? 0 : 1.6, ease: "expo.out", onUpdate: () => { n.textContent = pre + Math.round(o.v).toLocaleString("en-US") + suf; } });
-    },
-  });
-});
 
 /* ---------------------------------------------------------- GitHub heatmap (cached 6h) */
 (function heatmap() {
@@ -331,12 +318,12 @@ $$(".stat .n").forEach((n) => {
 const countEl = $("#preCount"), bar = $("#preBar");
 const shown = { v: 0 };
 const loadTick = () => {
-  shown.v += (1 - shown.v) * 0.05;
+  shown.v += (1 - shown.v) * 0.16;
   countEl.textContent = String(Math.round(shown.v * 100)).padStart(3, "0");
   bar.style.transform = `scaleX(${shown.v})`;
 };
 gsap.ticker.add(loadTick);
-await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 2500))]);
+await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1200))]);
 await new Promise((r) => { const w = () => (shown.v > 0.995 ? r() : requestAnimationFrame(w)); w(); });
 gsap.ticker.remove(loadTick);
 countEl.textContent = "100";
@@ -345,13 +332,13 @@ scrollAnims();
 chrome?.snap();
 
 const intro = gsap.timeline({ defaults: { ease: "expo.inOut" } })
-  .to(".pre__count span", { yPercent: -110, duration: 0.8, ease: "expo.in" })
-  .to("#pre", { clipPath: "inset(0 0 100% 0)", duration: 1.3 }, "-=0.1");
-if (chrome) intro.fromTo(T, { intro: 0 }, { intro: 1, duration: 3.4, ease: "power2.out" }, "-=1.2");
+  .to(".pre__count span", { yPercent: -110, duration: 0.5, ease: "expo.in" })
+  // page becomes scrollable as soon as the curtain lifts, not after the whole intro finishes
+  .to("#pre", { clipPath: "inset(0 0 100% 0)", duration: 0.9, onComplete: () => { document.body.classList.remove("is-loading"); $("#pre")?.remove(); lenis.start(); ScrollTrigger.refresh(); chrome?.splash(0.7); } }, "-=0.1");
+if (chrome) intro.fromTo(T, { intro: 0 }, { intro: 1, duration: 2.2, ease: "power2.out" }, "-=0.8");
 intro
-  .from(".hero__name .char", { yPercent: 115, duration: 1.4, ease: "expo.out", stagger: 0.035 }, "-=2.1")
-  .from(".hero__sub .line", { yPercent: 110, duration: 1.2, ease: "expo.out", stagger: 0.08 }, "-=1.2")
-  .from(".hero__meta, .hero__cta, .nav", { opacity: 0, duration: 1, ease: "power2.out" }, "-=1.1")
-  .add(() => { document.body.classList.remove("is-loading"); $("#pre").remove(); lenis.start(); ScrollTrigger.refresh(); chrome?.splash(0.7); });
+  .from(".hero__name .char", { yPercent: 115, duration: 1.1, ease: "expo.out", stagger: 0.03 }, "-=1.5")
+  .from(".hero__sub .line", { yPercent: 110, duration: 1, ease: "expo.out", stagger: 0.08 }, "-=0.9")
+  .from(".hero__meta, .hero__cta, .nav", { opacity: 0, duration: 0.8, ease: "power2.out" }, "-=0.8");
 
 window.__done = true;
