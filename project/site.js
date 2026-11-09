@@ -90,23 +90,9 @@ tick(); setInterval(tick, 15000);
 const progress = $("#progress");
 lenis.on("scroll", ({ progress: p }) => { progress.style.transform = `scaleX(${p || 0})`; });
 
-/* ---------------------------------------------------------- stack band */
-const tracks = $$(".band__track").map((el) => {
-  el.innerHTML += el.innerHTML; // seamless loop
-  return { el, x: 0, dir: +el.dataset.dir };
-});
-let bandSign = 1;
-gsap.ticker.add((_, dtMs) => {
-  const v = lenis.velocity || 0;
-  if (Math.abs(v) > 0.4) bandSign = Math.sign(v);
-  if (chrome) T.vel = gsap.utils.clamp(-1, 1, v / 40);
-  const speed = reduced ? 0 : 0.04 + Math.min(Math.abs(v), 60) * 0.01;
-  tracks.forEach((t) => {
-    const w = t.el.scrollWidth / 2;
-    t.x -= speed * t.dir * bandSign * dtMs;
-    if (w) t.x = ((t.x % w) - w) % w;
-    t.el.style.transform = `translate3d(${t.x}px,0,0) skewX(${gsap.utils.clamp(-10, 10, -v * 0.18)}deg)`;
-  });
+/* ---------------------------------------------------------- scroll velocity -> metal */
+gsap.ticker.add(() => {
+  if (chrome) T.vel = gsap.utils.clamp(-1, 1, (lenis.velocity || 0) / 40);
 });
 
 /* ---------------------------------------------------------- selected work */
