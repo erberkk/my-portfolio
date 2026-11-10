@@ -238,32 +238,33 @@ void main() {
   vec3 col = vec3(0.0);
   float alpha = 0.0;
   float px = 1.5 / uRes.y * 2.0 * FOV;
-  if (hit) {
-    vec3 p = ro + rd * t;
+  // soft silhouette: a miss that passed close to the surface still covers part of the pixel.
+  // Hit and near-miss share one normal + shade: every scene() call site is inlined by the
+  // driver's compiler, so fewer sites is what keeps the first-visit compile short.
+  float cover = hit ? 1.0 : 1.0 - smoothstep(0.0, px * minT, minD);
+  if (cover > 0.001) {
+    vec3 p = ro + rd * (hit ? t : minT);
     vec3 n = normalAt(p);
-    vec3 r = reflect(rd, n);
-    col = shade(rd, n);
-    // one bounce: chrome that faces other chrome reflects it (desktop only; phones spend it on resolution)
+    col = shade(rd, n) * (hit ? 1.0 : 0.85);
+    alpha = cover;
+    if (hit) {
+      // one bounce: chrome that faces other chrome reflects it (strong desktops only)
 #ifndef LITE
-    float t2 = 0.03;
-    for (int j = 0; j < 28; j++) {
-      float d2 = scene(p + r * t2);
-      if (d2 < 0.002) {
-        vec3 n2 = normalAt(p + r * t2);
-        col = mix(col, shade(r, n2) * 0.85, 0.9);
-        break;
+      vec3 r = reflect(rd, n);
+      float t2 = 0.03;
+      bool hit2 = false;
+      for (int j = 0; j < 28; j++) {
+        float d2 = scene(p + r * t2);
+        if (d2 < 0.002) { hit2 = true; break; }
+        t2 += d2;
+        if (t2 > 3.0) break;
       }
-      t2 += d2;
-      if (t2 > 3.0) break;
-    }
+      // normal + shade sit outside the loop so the compiler does not carry them per iteration
+      if (hit2) col = mix(col, shade(r, normalAt(p + r * t2)) * 0.85, 0.9);
 #endif
-    float ao = clamp(scene(p + n * 0.12) / 0.12, 0.0, 1.0);
-    col *= 0.5 + 0.5 * ao;
-    alpha = 1.0;
-  } else {
-    // soft silhouette: a miss that passed close to the surface still covers part of the pixel
-    float cover = 1.0 - smoothstep(0.0, px * minT, minD);
-    if (cover > 0.001) { col = shade(rd, normalAt(ro + rd * minT)) * 0.85; alpha = cover; }
+      float ao = clamp(scene(p + n * 0.12) / 0.12, 0.0, 1.0);
+      col *= 0.5 + 0.5 * ao;
+    }
   }
   col = col / (1.0 + col * 0.5);
   col = pow(col, vec3(0.4545)) * uDim;
@@ -278,36 +279,67 @@ const VERT = `attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }`
 
 export const SHAPES = ["hero", "melt", "ring", "chain", "orb"];
 
-export async function createChrome(canvas) {
+// Returns right away. The shader builds in the background and the metal fades in when it is
+// ready (`ready`), so the page never waits on the GPU: the first visit on a machine has to
+// compile the raymarcher, which takes seconds on an old one. `idle` resolves once the intro
+// has played; browsers that cannot compile off-thread wait for it before they block.
+export function createChrome(canvas, { idle } = {}) {
   const lite = matchMedia("(max-width: 860px), (pointer: coarse)").matches;
+  // Nothing is switched off by hardware class: integrated graphics can be plenty. A low-core
+  // machine only starts at a lower resolution; from there every decision is measured frame time.
+  const weak = !lite && ((navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4);
   const gl = canvas.getContext("webgl", { antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: "high-performance", preserveDrawingBuffer: false });
   if (!gl) return null;
-  const sh = (type, src) => {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src); gl.compileShader(s);
-    return s;
-  };
-  const prog = gl.createProgram();
-  const vs = sh(gl.VERTEX_SHADER, VERT);
-  const fs = sh(gl.FRAGMENT_SHADER, (lite ? "#define LITE\n#define STEPS 72\n" : "#define STEPS 96\n") + FRAG);
-  gl.attachShader(prog, vs);
-  gl.attachShader(prog, fs);
-  gl.linkProgram(prog);
-  // Compile/link of the raymarcher is heavy. Querying the status right away blocks the main
-  // thread (frozen preloader); with KHR_parallel_shader_compile it happens off-thread and we poll.
-  const par = gl.getExtension("KHR_parallel_shader_compile");
-  if (par) await new Promise((res) => { const poll = () => (gl.getProgramParameter(prog, par.COMPLETION_STATUS_KHR) ? res() : setTimeout(poll, 16)); poll(); });
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getShaderInfoLog(fs) || gl.getProgramInfoLog(prog));
-  gl.useProgram(prog);
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-  const loc = gl.getAttribLocation(prog, "a");
-  gl.enableVertexAttribArray(loc);
-  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
   const U = {};
-  ["uRes", "uTime", "uSplash", "uSplashT", "uVel", "uScale", "uHover", "uActive", "uIntro", "uDim", "uLocal", "uMorph", "uOffset", "uMove",
-   "uMouse", "uMouseOn", "uLight", "wHero", "wMelt", "wRing", "wChain", "wOrb"].forEach((n) => (U[n] = gl.getUniformLocation(prog, n)));
+  const par = gl.getExtension("KHR_parallel_shader_compile");
+  const UNIFORMS = ["uRes", "uTime", "uSplash", "uSplashT", "uVel", "uScale", "uHover", "uActive", "uIntro", "uDim", "uLocal", "uMorph", "uOffset", "uMove",
+    "uMouse", "uMouseOn", "uLight", "wHero", "wMelt", "wRing", "wChain", "wOrb"];
+  async function compile(defines) {
+    const sh = (type, src) => {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src); gl.compileShader(s);
+      return s;
+    };
+    const prog = gl.createProgram();
+    const vs = sh(gl.VERTEX_SHADER, VERT), fs = sh(gl.FRAGMENT_SHADER, defines + FRAG);
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.bindAttribLocation(prog, 0, "a");
+    gl.linkProgram(prog);
+    // asking for the link status blocks until the compile is done, so poll the async flag instead
+    if (par) await new Promise((res) => { const poll = () => (gl.getProgramParameter(prog, par.COMPLETION_STATUS_KHR) ? res() : setTimeout(poll, 50)); poll(); });
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getShaderInfoLog(fs) || gl.getProgramInfoLog(prog));
+    return prog;
+  }
+  function use(prog) {
+    gl.useProgram(prog);
+    UNIFORMS.forEach((n) => (U[n] = gl.getUniformLocation(prog, n)));
+  }
+  // The cheap shader (no bounce pass) compiles several times faster than the full one, so it
+  // always goes first.
+  async function build() {
+    if (!par && idle) await idle;
+    const cheap = await compile(lite ? "#define LITE\n#define STEPS 72\n" : "#define LITE\n#define STEPS 96\n");
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    use(cheap);
+  }
+  // Any desktop that proves it can run the cheap shader at full resolution trades up to the
+  // full one (with the bounce pass). It compiles in the background and swaps in when done.
+  async function upgrade() {
+    if (lite || !par) return;
+    if (idle) await idle;
+    for (let i = 0; i < 12; i++) {
+      await new Promise((r) => setTimeout(r, 1500));
+      if (dead) return;
+      if (quality >= 0.85) break;
+      if (i === 11) return;
+    }
+    try { use(await compile("#define STEPS 96\n")); } catch (e) { console.warn("chrome full:", e); }
+  }
 
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const CAMZ = 4.2, FOV = 0.62;
@@ -322,8 +354,8 @@ export async function createChrome(canvas) {
 
   // Phones render at (near) panel resolution: a low-res canvas stretched over a 3x screen is
   // what made the metal look smeared. Cost is cut in the shader (LITE) instead of in pixels.
-  let quality = lite ? 1 : 0.85;
-  const minQuality = lite ? 0.75 : 0.4;
+  let quality = lite ? 1 : weak ? 0.6 : 0.85;
+  const minQuality = lite ? 0.75 : 0.3;
   const dpr = Math.min(devicePixelRatio || 1, lite ? 2 : 1.5);
   function resize() {
     const w = Math.max(1, Math.round(innerWidth * dpr * quality));
@@ -355,12 +387,19 @@ export async function createChrome(canvas) {
     splashT = time;
   }
 
-  let last = performance.now(), frames = 0, acc = 0, running = true;
-  document.addEventListener("visibilitychange", () => { running = !document.hidden; if (running) { last = performance.now(); requestAnimationFrame(frame); } });
+  let last = performance.now(), frames = 0, acc = 0, running = !document.hidden, built = false, dead = false, warm = 0, slow = 0, queued = false;
+  const kick = () => { if (!queued && running && built && !dead) { queued = true; requestAnimationFrame(frame); } };
+  document.addEventListener("visibilitychange", () => {
+    running = !document.hidden;
+    last = performance.now(); warm = 0; frames = 0; acc = 0;
+    kick();
+  });
 
   function frame(now) {
-    if (!running) return;
-    const dt = Math.min((now - last) / 1000, 0.05);
+    queued = false;
+    if (!running || dead) return;
+    const raw = Math.min(Math.max(now - last, 0) / 1000, 1);
+    const dt = Math.min(raw, 0.05);
     last = now;
     time += dt * (reduced ? 0.25 : 1);
     const k = 1 - Math.pow(0.03, dt);        // ~1s glides
@@ -410,22 +449,45 @@ export async function createChrome(canvas) {
     gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    // adapt resolution every ~40 frames
-    frames++; acc += dt;
-    if (frames >= 40) {
+    // Adapt resolution. A slow GPU is cut hard and at once (cost goes with quality squared),
+    // so an old machine is rescued within half a second instead of crawling down step by step.
+    if (warm < 2) warm++;                    // the first frames carry one-off driver work
+    else { frames++; acc += raw; }
+    if (frames >= 40 || (frames > 0 && acc >= 0.5)) {
       const avg = acc / frames;
-      if (avg > 0.022 && quality > minQuality) { quality = Math.max(minQuality, quality - 0.05); resize(); }
-      else if (avg < 0.0135 && quality < 1) { quality = Math.min(1, quality + 0.05); resize(); }
+      if (avg > 0.022 && quality > minQuality) {
+        quality = Math.max(minQuality, quality * Math.min(0.94, Math.max(0.45, Math.sqrt(0.017 / avg))));
+        resize();
+      } else if (avg < 0.0135 && quality < 1) { quality = Math.min(1, quality + 0.05); resize(); }
+      // still under ~8 fps at the floor: this GPU cannot carry it. Let go, the page matters more.
+      slow = quality <= minQuality && avg > 0.125 ? slow + 1 : 0;
+      if (slow >= 2) {
+        dead = true;
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        canvas.classList.remove("is-on");
+        document.documentElement.classList.add("no-gl");
+        return;
+      }
       frames = 0; acc = 0;
     }
-    requestAnimationFrame(frame);
+    kick();
   }
-  requestAnimationFrame(frame);
+
+  const snap = () => { for (const key of ["x", "y", "scale"]) { spring[key].x = target[key]; spring[key].v = 0; } };
+  const ready = build().then(() => {
+    built = true;
+    snap();
+    canvas.classList.add("is-on");
+    last = performance.now();
+    kick();
+    upgrade();
+  });
 
   return {
-    target, splash: splashNow, halfW, halfH,
+    target, splash: splashNow, halfW, halfH, ready,
     // jump straight to the current target (first frame), so the page never opens mid-flight
-    snap() { for (const key of ["x", "y", "scale"]) { spring[key].x = target[key]; spring[key].v = 0; } },
+    snap,
     get quality() { return quality; },
+    get dead() { return dead; },
   };
 }

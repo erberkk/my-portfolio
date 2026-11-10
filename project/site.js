@@ -1,7 +1,7 @@
 /* ============================================================
    ERBERK — interactions
    ============================================================ */
-import { createChrome } from "./chrome.js?v=6";
+import { createChrome } from "./chrome.js?v=7";
 import { SW_CATS, SW_PROJECTS } from "./projects.js?v=3";
 
 const { gsap, ScrollTrigger, SplitText, Lenis } = window;
@@ -13,7 +13,6 @@ const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
 const mobile = () => matchMedia("(max-width: 860px)").matches;
 
 /* ---------------------------------------------------------- chrome */
-// preloader counter starts first so it animates while the WebGL shader compiles
 const countEl = $("#preCount"), bar = $("#preBar");
 const shown = { v: 0 };
 const loadTick = () => {
@@ -22,12 +21,17 @@ const loadTick = () => {
   bar.style.transform = `scaleX(${shown.v})`;
 };
 gsap.ticker.add(loadTick);
-await new Promise((r) => requestAnimationFrame(() => r()));
 
-let chrome = null;
-try { chrome = await createChrome($("#chrome")); } catch (e) { console.warn("chrome:", e); }
+// The metal is a bonus, never a gate: the page boots without waiting for it. The shader
+// compiles in the background (seconds on an old machine's first visit) and fades in when
+// ready; with no usable GPU it never shows and the page is simply the page.
+let introDone;
+const idle = new Promise((r) => (introDone = r));
+let chrome = null, glReady = false;
+try { chrome = createChrome($("#chrome"), { idle }); } catch (e) { console.warn("chrome:", e); }
 if (!chrome) document.documentElement.classList.add("no-gl");
 const T = chrome ? chrome.target : { };
+chrome?.ready.then(() => { glReady = true; }, (e) => { console.warn("chrome:", e); document.documentElement.classList.add("no-gl"); });
 
 /* ---------------------------------------------------------- lenis */
 const lenis = new Lenis({ lerp: 0.09 });
@@ -324,10 +328,14 @@ const intro = gsap.timeline({ defaults: { ease: "expo.inOut" } })
   .to(".pre__count span", { yPercent: -110, duration: 0.5, ease: "expo.in" })
   // page becomes scrollable as soon as the curtain lifts, not after the whole intro finishes
   .to("#pre", { clipPath: "inset(0 0 100% 0)", duration: 0.9, onComplete: () => { document.body.classList.remove("is-loading"); $("#pre")?.remove(); lenis.start(); ScrollTrigger.refresh(); chrome?.splash(0.7); } }, "-=0.1");
-if (chrome) intro.fromTo(T, { intro: 0 }, { intro: 1, duration: 2.2, ease: "power2.out" }, "-=0.8");
+// the metal gathers with the intro if its shader is already built, otherwise whenever it arrives
+const metalIn = { intro: 1, duration: 2.2, ease: "power2.out" };
+if (chrome && glReady) intro.fromTo(T, { intro: 0 }, metalIn, 0.5);
+else chrome?.ready.then(() => gsap.fromTo(T, { intro: 0 }, metalIn), () => {});
 intro
-  .from(".hero__name .char", { yPercent: 115, duration: 1.1, ease: "expo.out", stagger: 0.03 }, "-=1.5")
-  .from(".hero__sub .line", { yPercent: 110, duration: 1, ease: "expo.out", stagger: 0.08 }, "-=0.9")
-  .from(".hero__meta, .hero__cta, .nav", { opacity: 0, duration: 0.8, ease: "power2.out" }, "-=0.8");
+  .from(".hero__name .char", { yPercent: 115, duration: 1.1, ease: "expo.out", stagger: 0.03 }, 1.2)
+  .from(".hero__sub .line", { yPercent: 110, duration: 1, ease: "expo.out", stagger: 0.08 }, 1.8)
+  .from(".hero__meta, .hero__cta, .nav", { opacity: 0, duration: 0.8, ease: "power2.out" }, 2.1)
+  .add(() => introDone());
 
 window.__done = true;
